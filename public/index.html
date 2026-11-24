@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;600;700&family=Fira+Sans:wght@400;600&display=swap" rel="stylesheet">
+<title>Producción de Cobots</title>
+<style>
+:root{
+  --bg:#0b0f14;--card:#131a22;--ink:#e8edf3;--mute:#9aa7b6;--line:#243040;--accent:#f97316;--accent-ink:#0b0f14;
+  --ok:#4cc27f;--ok-bg:#12332a;--warn:#e6b84d;--warn-bg:#3a3118;--bad:#f0817f;--bad-bg:#3d1f21;--none:#9aa3af;--none-bg:#262e38;
+  --sans:"Fira Sans",system-ui,Segoe UI,sans-serif;--mono:"Fira Code",ui-monospace,Consolas,monospace
+}
+@media (prefers-color-scheme:light){:root{
+  --bg:#f8fafc;--card:#fff;--ink:#1e293b;--mute:#566274;--line:#dfe4ea;--accent:#c2410c;--accent-ink:#fff;
+  --ok:#1a7f45;--ok-bg:#d9f3e3;--warn:#8a5a0b;--warn-bg:#fdf1c7;--bad:#b42323;--bad-bg:#fbdcdc;--none:#566274;--none-bg:#e5e7eb}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--sans)}
+main{max-width:1100px;margin:0 auto;padding:0 16px 48px}
+.top{display:flex;align-items:center;gap:16px;padding:20px 0 14px;border-bottom:4px solid;border-image:repeating-linear-gradient(135deg,var(--accent) 0 14px,transparent 14px 28px) 4}
+.top svg{flex:none;width:56px;height:56px;color:var(--accent)}
+h1{margin:0;font-size:1.7rem;line-height:1.15;letter-spacing:-.01em}
+h2{font-size:1.1rem;margin:36px 0 12px;color:var(--accent);text-transform:uppercase;letter-spacing:.08em}
+.live{margin-left:auto;display:flex;align-items:center;gap:8px;font:600 .8rem var(--mono);color:var(--accent);white-space:nowrap}
+.live i{width:10px;height:10px;border-radius:50%;background:var(--bad)}
+.live.on i{background:var(--ok);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 7px transparent;box-shadow:0 0 0 7px color-mix(in srgb,var(--ok) 0%,transparent);opacity:.5}}
+.sub{color:var(--mute);margin:12px 0 4px}
+.mood{font-size:1.25rem;font-weight:600;margin:16px 0 18px}
+.mood b{color:var(--accent)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;transition:transform .2s,border-color .2s}
+.card:hover{transform:translateY(-3px);border-color:var(--accent)}
+.kpi b{display:block;font:700 2.1rem/1.2 var(--mono);color:var(--accent)}.kpi span{color:var(--mute);font-size:.9rem}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin:12px 0 0;font-size:.9rem}.legend:hover{transform:none;border-color:var(--line)}
+.chip{display:inline-block;padding:1px 10px;border-radius:99px;font-weight:600;font-size:.85rem}
+.ok{background:var(--ok-bg);color:var(--ok)}.warn{background:var(--warn-bg);color:var(--warn)}
+.bad{background:var(--bad-bg);color:var(--bad)}.none{background:var(--none-bg);color:var(--none)}
+.lines{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:12px}
+.line h3{margin:0;font-size:1.05rem}.meta{color:var(--mute);font-size:.85rem}
+.verdict{font-weight:600;font-size:.95rem;margin-top:8px}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.prog{height:8px;background:var(--none-bg);border-radius:4px;margin:10px 0 4px;overflow:hidden}
+.prog i{display:block;height:100%;transform-origin:left;animation:grow .8s ease-out}
+.bars{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:12px}
+.col{display:flex;flex-direction:column;align-items:center;font-size:.78rem}
+.plot{position:relative;height:90px;width:100%;display:flex;align-items:flex-end}
+.plot u{display:block;width:100%;border-radius:4px 4px 0 0;min-height:2px;transform-origin:bottom;animation:rise .7s ease-out}
+.plot s{position:absolute;left:-2px;right:-2px;border-top:2px dashed var(--accent)}
+@keyframes grow{from{transform:scaleX(0)}}@keyframes rise{from{transform:scaleY(0)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.col strong{font:600 .9rem var(--mono)}.col small{color:var(--mute)}
+.live-col u{opacity:.55}
+#banner{color:var(--bad);margin:12px 0}
+details{margin-top:28px}summary{cursor:pointer;font-weight:600;color:var(--accent)}
+dl{margin:8px 0 0}dt{font-weight:600;margin-top:8px}dd{margin:0;color:var(--mute)}
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+  <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="50" width="30" height="8" rx="2"/><path d="M23 50V36l16-14"/><circle cx="23" cy="36" r="4"/><circle cx="39" cy="22" r="4"/><path d="M43 20l12-6M43 24l10 6"/></svg>
+  <div><h1>Así van nuestros cobots</h1><div class="meta">Producción hora por hora</div></div>
+  <span class="live" id="live"><i></i><b id="liveTxt">CONECTANDO…</b></span>
+</header>
+<p class="mood" id="mood"></p>
+<p class="sub" id="stamp"></p>
+<p class="card bad" id="banner" hidden></p>
+
+<section class="kpis" id="kpis"></section>
+<div class="legend card" id="legend"></div>
+
+<div id="groups"></div>
+
+<details>
+  <summary>¿Cómo leer este tablero? (glosario)</summary>
+  <dl>
+    <dt>Cobot</dt><dd>Robot colaborativo: ayuda a las personas en la línea de ensamble.</dd>
+    <dt>Meta</dt><dd>Piezas que debe producir la línea en cada hora.</dd>
+    <dt>H 06, H 07…</dt><dd>La hora del reloj: "H 06" es de 6:00 a 6:59 a. m.</dd>
+    <dt>Línea punteada</dt><dd>Marca la meta de la hora; la barra debe llegar hasta ahí.</dd>
+    <dt>Barra tenue</dt><dd>Hora en curso: todavía no termina, por eso no se califica ni cuenta en el cumplimiento.</dd>
+    <dt>Cumplimiento</dt><dd>Piezas hechas ÷ piezas esperadas, solo con horas ya terminadas.</dd>
+  </dl>
+</details>
+</main>
+
+<script>
+let DATA = null;
+// Semáforo inferido de los colores del tablero original: ≥95% verde, ≥90% amarillo, <90% rojo, 0 gris.
+const st = (v,m) => v===0 ? ["none","Sin producción"] : v>=m*.95 ? ["ok","Cumple"] : v>=m*.9 ? ["warn","Casi"] : ["bad","Por debajo"];
+const COL = {ok:"var(--ok)",warn:"var(--warn)",bad:"var(--bad)",none:"var(--none)"};
+const pct = (a,b) => b ? Math.round(a/b*100) : 0;
+const esc = s => String(s).replace(/[&<>"']/g, c => "&#"+c.charCodeAt(0)+";");
+function render(){
+const last = DATA.hours.length-1; // índice de la hora en curso
+
+const all = DATA.groups.flatMap(g=>g.lines).map(l=>{
+  const done=l.v.slice(0,last), made=done.reduce((a,b)=>a+b,0), need=l.m*last;
+  return {...l, made, need, p:pct(made,need), zeros:done.filter(x=>x===0).length};
+});
+const tMade=all.reduce((a,l)=>a+l.made,0), tNeed=all.reduce((a,l)=>a+l.need,0);
+const okNow=all.filter(l=>st(l.v[last-1],l.m)[0]==="ok").length;
+const zeros=all.reduce((a,l)=>a+l.zeros,0);
+const best=[...all].sort((a,b)=>b.p-a.p)[0], worst=[...all].sort((a,b)=>a.p-b.p)[0];
+
+document.getElementById("stamp").textContent =
+  `Datos en vivo, actualizados ${DATA.stamp} · Cada barra es lo producido en una hora, comparado con la meta de esa hora.`;
+const gp=pct(tMade,tNeed);
+document.getElementById("mood").innerHTML = gp>=95 ? "<b>¡Gran turno!</b> El equipo va cumpliendo la meta." : gp>=75 ? "<b>Buen ritmo.</b> Estamos cerca de la meta, falta poco." : "<b>Hay oportunidad.</b> Veamos dónde podemos ayudar a las líneas.";
+document.getElementById("kpis").innerHTML = [
+  [pct(tMade,tNeed)+"%", `Cumplimiento general de la meta (${tMade.toLocaleString("es-MX")} de ${tNeed.toLocaleString("es-MX")} piezas esperadas)`],
+  [`${okNow} de ${all.length}`, `líneas que cumplieron la meta en la última hora terminada (H ${DATA.hours[last-1]})`],
+  [zeros, "horas sin producir nada en total (revisar paros o falta de material)"],
+  [esc(best.n), `es la línea que mejor va (${best.p}%). La que más atención necesita: ${esc(worst.n)} (${worst.p}%)`]
+].map(([b,s])=>`<div class="card kpi"><b>${b}</b><span>${s}</span></div>`).join("");
+
+document.getElementById("legend").innerHTML = "<b>Colores:</b> " + [
+  ["ok","Cumple","95% o más de la meta"],["warn","Casi","entre 90% y 95%"],
+  ["bad","Por debajo","menos de 90%"],["none","Sin producción","0 piezas"]
+].map(([c,t,d])=>`<span><span class="chip ${c}">${t}</span> ${d}</span>`).join("");
+
+const bars = l => {
+  const max = Math.max(l.m, ...l.v);
+  return DATA.hours.map((h,i)=>{
+    const [c,t]=st(l.v[i],l.m), live=i===last;
+    return `<div class="col ${live?"live-col":""}" title="H ${h}: ${l.v[i]} de ${l.m}">
+      <strong>${l.v[i]}</strong>
+      <div class="plot"><u style="height:${l.v[i]/max*100}%;background:${COL[c]}"></u><s style="bottom:${l.m/max*100}%"></s></div>
+      <small>H ${h}</small><small>${live?"en curso":t}</small></div>`;
+  }).join("");
+};
+document.getElementById("groups").innerHTML = DATA.groups.map(g=>{
+  const cards = g.lines.map(l=>{
+    const a=all.find(x=>x.n===l.n), c = a.p>=95?"ok":a.p>=90?"warn":"bad";
+    return `<article class="card line">
+      <div class="head"><div><h3>${esc(l.n)}</h3><div class="meta">Meta: ${l.m} piezas por hora</div></div>
+      <span class="chip ${c}">${a.p}% de la meta</span></div>
+      <div class="verdict" style="color:${COL[c]}">${a.p>=95?"Va volando":a.p>=90?"Casi lo logra":a.p>=50?"Puede mejorar":a.made>0?"Necesita ayuda":"Aún sin arrancar"}</div>
+      <div class="prog"><i style="width:${Math.min(a.p,100)}%;background:${COL[c]}"></i></div>
+      <div class="meta">${a.made.toLocaleString("es-MX")} piezas hechas de ${a.need.toLocaleString("es-MX")} esperadas (H ${DATA.hours[0]}–H ${DATA.hours[last-1]})</div>
+      <div class="bars">${bars(l)}</div></article>`;
+  }).join("");
+  return `<h2>${esc(g.name)}</h2><div class="lines">${cards}</div>`;
+}).join("");
+}
+const banner = document.getElementById("banner");
+// El punto solo late cuando la última lectura salió bien; si no, queda fijo en rojo.
+const setLive = ok => { document.getElementById("live").classList.toggle("on", ok); document.getElementById("liveTxt").textContent = ok ? "EN VIVO" : "SIN CONEXIÓN"; };
+async function refresh(){
+  try {
+    const r = await (await fetch("/api/data",{cache:"no-store"})).json();
+    if (r.hours.length) { DATA = r; render(); }
+    setLive(r.ok);
+    banner.hidden = r.ok; banner.textContent = r.ok ? "" : "No se pudo actualizar (" + r.error + "). Se muestra el último dato válido.";
+  } catch { setLive(false); banner.hidden = false; banner.textContent = "El servidor local no responde. Revisa que siga corriendo."; }
+}
+refresh(); setInterval(refresh, 10000);
+</script>
+</body>
+</html>
