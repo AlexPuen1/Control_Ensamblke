@@ -23,6 +23,6 @@ Tienes varias opciones para ejecutar el sistema con solo dar doble clic:
 ---
 
 ## ⚙️ Requisitos
-- [Node.js](https://nodejs.org/) (versión 18 o superior).
+- Nada más: si no tienes Node.js, `iniciar.bat` lo instala solo (Windows 10/11 con winget).
 - Microsoft Edge o Google Chrome instalado en el sistema.
 - Acceso de red al servidor de Ignition (`http://est01ignition:8088/...`).

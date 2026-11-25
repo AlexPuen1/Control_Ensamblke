@@ -10,11 +10,15 @@ echo.
 :: 1. Verificar si Node.js esta instalado
 where node >nul 2>&1
 if %errorlevel% neq 0 (
-    echo [ERROR] Node.js no esta instalado o no se encuentra en el PATH del sistema.
-    echo Por favor descargalo e instalalo desde: https://nodejs.org/
-    echo.
-    pause
-    exit /b 1
+    echo [INFO] Node.js no esta instalado. Instalando automaticamente...
+    winget install -e --id OpenJS.NodeJS.LTS --silent --accept-package-agreements --accept-source-agreements
+    set "PATH=%PATH%;%ProgramFiles%\nodejs"
+    where node >nul 2>&1
+    if errorlevel 1 (
+        echo [ERROR] No se pudo instalar Node.js. Instalalo desde https://nodejs.org/ y vuelve a ejecutar.
+        pause
+        exit /b 1
+    )
 )
 
 :: 2. Si no existe node_modules, instalar dependencias automaticamente
